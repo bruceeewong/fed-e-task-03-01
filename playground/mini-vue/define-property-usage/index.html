@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Object.defineProperty usage</title>
+  </head>
+  <body>
+    <div id="app">
+      hello
+    </div>
+
+    <script>
+      // 模拟Vue实例
+      let vm = {};
+
+      // 模拟vm中的data
+      let data = {
+        msg: "hello",
+        count: 10,
+      };
+
+      function proxyData(data) {
+        // 遍历data，劫持vm中的属性
+        Object.keys(data).forEach((key) => {
+          Object.defineProperty(vm, key, {
+            enumerable: true,
+            configurable: true,
+            get() {
+              console.log(`get ${key}: `, data[key]);
+              return data[key];
+            },
+            set(newVal) {
+              console.log(`set ${key}: ${newVal}`);
+              if (newVal === data[key]) {
+                return;
+              }
+              data[key] = newVal;
+              document.querySelector("#app").textContent = newVal;
+            },
+          });
+        });
+      }
+
+      proxyData(data)
+      vm.msg = "Hello World";
+      console.log(vm.msg);
+    </script>
+  </body>
+</html>
