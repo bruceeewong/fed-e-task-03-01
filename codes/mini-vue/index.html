@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <div id="app">
+    <h1>插值表达式</h1>
+    <h3>{{msg}}</h3>
+    <h3>{{count}}</h3>
+
+    <h1>v-text</h1>
+    <div v-text="msg"></div>
+
+    <h1>v-model</h1>
+    <input type="text" v-model="msg">
+    <input type="text" v-model="count">
+
+    <h1>v-html</h1>
+    <div v-html="html"></div>
+
+    <h1>v-on</h1>
+    <h3 v-on:click="handleClick">Click Me</h3>
+  </h1>
+
+  <script src="./js/observer.js"></script>
+  <script src="./js/compiler.js"></script>
+  <script src="./js/vue.js"></script>
+
+  <script>
+    let data = {
+      msg: 'Hello Bruski',
+      count: 1000,
+      person: {
+        name: 'Bruski',
+        age: 21
+      },
+      html: `<span style="color: red;">RED</span>`
+    }
+
+    let vm = new Vue({
+      el: '#app',
+      data: data,
+      methods: {
+        handleClick(e) {
+          alert('click!')
+          console.log(e)
+        }
+      }
+    })
+
+    console.log(vm)
+
+    console.log(vm.msg)
+    vm.msg = {
+      test: 'hello'
+    }
+    vm.count = 10001
+  </script>
+</body>
+</html>
