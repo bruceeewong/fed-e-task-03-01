@@ -789,7 +789,9 @@ vnode = vnode = (0, _snabbdom.h)('ul', [(0, _snabbdom.h)('li', {
   key: 'c'
 }, '微博'), (0, _snabbdom.h)('li', {
   key: 'b'
-}, '视频')]);
+}, '视频'), (0, _snabbdom.h)('li', {
+  key: 'd'
+}, '新增')]);
 patch(oldVnode, vnode);
 },{"snabbdom":"node_modules/snabbdom/es/snabbdom.js"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
@@ -819,7 +821,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "56991" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "52221" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

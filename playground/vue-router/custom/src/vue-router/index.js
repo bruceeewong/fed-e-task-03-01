@@ -85,6 +85,8 @@ export default class VueRouter {
     // 因为要渲染当前路由地址对应的组件，要绑定当前的this
     const self = this
     Vue.component('router-view', {
+      // 由于self.data是vue响应式数据，data发生变化时，会重新出发这里的render
+      // 实现视图的更新
       render(h) {
         const component = self.routeMap[self.data.current]
         return h(component)

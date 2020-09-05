@@ -263,7 +263,7 @@ export function init(modules: Array<Partial<Module>>, domApi?: DOMAPI) {
         // 以新节点的 key 找是否在老节点中有相同 key
         idxInOld = oldKeyToIdx[newStartVnode.key as string];
         if (isUndef(idxInOld)) { // New element
-          // 将新节点插入旧开始节点前
+          // 创建新节点DOM，将新节点插入旧开始节点前
           api.insertBefore(parentElm, createElm(newStartVnode, insertedVnodeQueue), oldStartVnode.elm as Node);
           newStartVnode = newCh[++newStartIdx];
         } else {
@@ -275,6 +275,7 @@ export function init(modules: Array<Partial<Module>>, domApi?: DOMAPI) {
           } else {
             // 如果sel和key相同，认为是可复用节点，更新节点差异
             patchVnode(elmToMove, newStartVnode, insertedVnodeQueue);
+            // 将原位置的节点置空
             oldCh[idxInOld] = undefined as any;
 
             // 将复用节点插入旧开始节点前
@@ -369,6 +370,7 @@ export function init(modules: Array<Partial<Module>>, domApi?: DOMAPI) {
 
     // 判断第一个节点是否为虚拟节点
     if (!isVnode(oldVnode)) {
+      // 将真实dom 创建为 vnode
       oldVnode = emptyNodeAt(oldVnode);
     }
 
@@ -377,7 +379,7 @@ export function init(modules: Array<Partial<Module>>, domApi?: DOMAPI) {
       // 找节点差异并更新dom
       patchVnode(oldVnode, vnode, insertedVnodeQueue);
     } else {
-      // 节点不同，vnode 创建对应的 DOM
+      // 节点不同, vnode 创建对应的 DOM, 新的替换掉老的
       // 获取当前的 DOM 元素
       elm = oldVnode.elm as Node;
       parent = api.parentNode(elm);
