@@ -46,12 +46,14 @@ class Compiler {
     // 遍历所有的属性节点
     Array.from(node.attributes).forEach(attr => {
       let attrName = attr.name
+      // 处理 on 指令
       if (this.isOnDirective(attrName)) {
-        // v-on:click -> click
-        console.log(attrName)
+        // v-on:click -> click，注册eventListeners
         let eventType = attrName.split(':')[1]
         let key = attr.value
         this.onUpdater(node, eventType, key)
+
+        // 处理普通指令
       } else if (this.isDirective(attrName)) {
         // v-text -> text，用于调用各个指令的updater
         attrName = attrName.substr(2)
@@ -71,17 +73,33 @@ class Compiler {
    */
   update(node, key, attrName) {
     let updateFn = this[`${attrName}Updater`]
-    updateFn && updateFn(node, this.vm[key])
+    updateFn && updateFn.call(this, node, this.vm[key], key)  // 改变this指向为compiler实例
   }
 
   // 处理 v-text 指令
-  textUpdater(node, value) {
+  textUpdater(node, value, key) {
     node.textContent = value
+
+    // 创建 v-text 的观察者
+    new Watcher(this.vm, key, (newValue) => {
+      node.textContent = newValue
+    })
   }
 
   // 处理 v-model 指令
-  modelUpdater(node, value) {
+  modelUpdater(node, value, key) {
     node.value = value
+
+    // 创建 v-model 的观察者
+    new Watcher(this.vm, key, (newValue) => {
+      node.value = newValue
+    })
+
+    // 给表单元素注册事件，实现视图->数据的响应式
+    node.addEventListener('input', () => {
+      // 触发属性的setter, 触发dep的通知，更新所有依赖, 从而实现双向绑定
+      this.vm[key] = node.value
+    })
   }
 
   // 处理 v-html 指令
@@ -108,6 +126,11 @@ class Compiler {
     if (reg.test(value)) {
       let key = (RegExp.$1).trim()  // 第一个分组
       node.textContent = value.replace(reg, this.vm[key])
+
+      // 为这个 插值表达式 创建 watcher, 数据变化触发更新节点内容
+      new Watcher(this.vm, key, (newValue) => {
+        node.textContent = newValue
+      })
     }
   }
 

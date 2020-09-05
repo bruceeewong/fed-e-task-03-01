@@ -1,5 +1,3 @@
-// import Dep from './dep'
-
 /**
  * 数据劫持
  * 将data对象的所有属性转为 getter / setter
@@ -39,8 +37,8 @@ class Observer {
    */
   defineReactive(obj, key, val) {
     let that = this
-    // 创建dep对象，负责收集依赖
-    // let dep = new Dep()
+    // 为每个属性创建一个dep对象，负责收集依赖，并发送通知
+    let dep = new Dep()
 
     // 如果val是对象，把val内部的属性转换为响应式数据
     // 如果属性值还是对象，要递归遍历
@@ -50,8 +48,10 @@ class Observer {
       enumerable: true,
       configurable: true,
       get() {
-        // 收集依赖
-        // Dep.target && dep.addSub(Dep.target)
+        // 在getter中, 收集依赖
+        if (Dep.target) {
+          dep.addSub(Dep.target)
+        }
         return val // 这里不能返回obj[key], 会栈溢出
       },
       set(newValue) {
@@ -61,7 +61,7 @@ class Observer {
         that.walk(newValue)
 
         // 发送通知所有观察者，去更新视图
-        // dep.notify()
+        dep.notify()
       }
     })
   }

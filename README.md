@@ -68,9 +68,13 @@ Diff算法的目的是：对比新旧vnode，找到节点和子节点的差异�
 
 ### 2、在模拟 Vue.js 响应式源码的基础上实现 v-html 指令，以及 v-on 指令。
 
-代码位置：
+代码位置：https://github.com/bruceeewong/fed-e-task-03-01/blob/master/codes/mini-vue/js/compiler.js
+
+效果：
+
+![](imgs/mini-vue.png)
 
 ### 3、参考 Snabbdom 提供的电影列表的示例，利用Snabbdom 实现类似的效果，如图：
 
-代码位置：
+代码位置：https://github.com/bruceeewong/fed-e-task-03-01/blob/master/codes/snabbdom-demo
 

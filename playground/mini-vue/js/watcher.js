@@ -1,5 +1,3 @@
-import Dep from './dep' // 观察者需要强依赖发布者，要
-
 class Watcher {
   constructor(vm, key, cb) {
     // vue实例
@@ -9,10 +7,10 @@ class Watcher {
     // 回调函数负责更新视图
     this.cb = cb
 
-    // 把当前的watcher对象记录到Dep的静态属性target中, 为了能注册自己
+    // 每次创建，记录自己到Dep的静态属性target中, 为了能注册自己
     Dep.target = this
 
-    // 触发get方法，收集依赖：在get方法中会调用addSub，将自己添加到Dep的subs中
+    // 触发get方法，收集依赖：在get方法中会调用dep 的 addSub，将自己添加到Dep的subs中
     // 即此属性创建了一个观察者，并在创建时将自己添加到发布者中
     this.oldValue = vm[key]
 

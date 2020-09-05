@@ -25,6 +25,9 @@
     <h3 v-on:click="handleClick">Click Me</h3>
   </h1>
 
+  <!-- 有依赖，dep需放最前面 -->
+  <script src="./js/dep.js"></script>
+  <script src="./js/watcher.js"></script> 
   <script src="./js/observer.js"></script>
   <script src="./js/compiler.js"></script>
   <script src="./js/vue.js"></script>
@@ -54,9 +57,6 @@
     console.log(vm)
 
     console.log(vm.msg)
-    vm.msg = {
-      test: 'hello'
-    }
     vm.count = 10001
   </script>
 </body>
