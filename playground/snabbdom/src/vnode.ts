@@ -11,11 +11,17 @@ import {Hero} from './modules/hero'
 export type Key = string | number;
 
 export interface VNode {
+  // 选择器
   sel: string | undefined;
+  // 节点数据: 属性/样式/事件等
   data: VNodeData | undefined;
+  // 子节点，和text只能互斥
   children: Array<VNode | string> | undefined;
+  // 记录 vnode 对应的真实 DOM
   elm: Node | undefined;
+  // 节点中的内容，和 children 互斥
   text: string | undefined;
+  // 优化用
   key: Key | undefined;
 }
 
@@ -41,7 +47,9 @@ export function vnode(sel: string | undefined,
                       children: Array<VNode | string> | undefined,
                       text: string | undefined,
                       elm: Element | Text | undefined): VNode {
+  // key 通过 data 传递
   let key = data === undefined ? undefined : data.key;
+  // VNode 就是一个 js 对象
   return {sel, data, children, text, elm, key};
 }
 

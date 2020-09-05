@@ -31,12 +31,15 @@ function updateAttrs(oldVnode: VNode, vnode: VNode): void {
     const cur = attrs[key];
     const old = oldAttrs[key];
     if (old !== cur) {
+      // 布尔类型属性
       if (cur === true) {
         elm.setAttribute(key, "");
       } else if (cur === false) {
         elm.removeAttribute(key);
       } else {
+        // 非布尔类型
         if (key.charCodeAt(0) !== xChar) {
+          // 不是以x开头，非命名空间
           elm.setAttribute(key, cur);
         } else if (key.charCodeAt(3) === colonChar) {
           // Assume xml namespace
@@ -45,6 +48,7 @@ function updateAttrs(oldVnode: VNode, vnode: VNode): void {
           // Assume xlink namespace
           elm.setAttributeNS(xlinkNS, key, cur);
         } else {
+          // 设置属性
           elm.setAttribute(key, cur);
         }
       }

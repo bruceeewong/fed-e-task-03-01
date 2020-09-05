@@ -766,227 +766,32 @@ function init(modules, domApi) {
     return vnode;
   };
 }
-},{"./vnode":"node_modules/snabbdom/es/vnode.js","./is":"node_modules/snabbdom/es/is.js","./htmldomapi":"node_modules/snabbdom/es/htmldomapi.js","./h":"node_modules/snabbdom/es/h.js","./thunk":"node_modules/snabbdom/es/thunk.js"}],"node_modules/snabbdom/modules/style.js":[function(require,module,exports) {
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-// Bindig `requestAnimationFrame` like this fixes a bug in IE/Edge. See #360 and #409.
-var raf = (typeof window !== 'undefined' && (window.requestAnimationFrame).bind(window)) || setTimeout;
-var nextFrame = function (fn) { raf(function () { raf(fn); }); };
-var reflowForced = false;
-function setNextFrame(obj, prop, val) {
-    nextFrame(function () { obj[prop] = val; });
-}
-function updateStyle(oldVnode, vnode) {
-    var cur, name, elm = vnode.elm, oldStyle = oldVnode.data.style, style = vnode.data.style;
-    if (!oldStyle && !style)
-        return;
-    if (oldStyle === style)
-        return;
-    oldStyle = oldStyle || {};
-    style = style || {};
-    var oldHasDel = 'delayed' in oldStyle;
-    for (name in oldStyle) {
-        if (!style[name]) {
-            if (name[0] === '-' && name[1] === '-') {
-                elm.style.removeProperty(name);
-            }
-            else {
-                elm.style[name] = '';
-            }
-        }
-    }
-    for (name in style) {
-        cur = style[name];
-        if (name === 'delayed' && style.delayed) {
-            for (var name2 in style.delayed) {
-                cur = style.delayed[name2];
-                if (!oldHasDel || cur !== oldStyle.delayed[name2]) {
-                    setNextFrame(elm.style, name2, cur);
-                }
-            }
-        }
-        else if (name !== 'remove' && cur !== oldStyle[name]) {
-            if (name[0] === '-' && name[1] === '-') {
-                elm.style.setProperty(name, cur);
-            }
-            else {
-                elm.style[name] = cur;
-            }
-        }
-    }
-}
-function applyDestroyStyle(vnode) {
-    var style, name, elm = vnode.elm, s = vnode.data.style;
-    if (!s || !(style = s.destroy))
-        return;
-    for (name in style) {
-        elm.style[name] = style[name];
-    }
-}
-function applyRemoveStyle(vnode, rm) {
-    var s = vnode.data.style;
-    if (!s || !s.remove) {
-        rm();
-        return;
-    }
-    if (!reflowForced) {
-        vnode.elm.offsetLeft;
-        reflowForced = true;
-    }
-    var name, elm = vnode.elm, i = 0, compStyle, style = s.remove, amount = 0, applied = [];
-    for (name in style) {
-        applied.push(name);
-        elm.style[name] = style[name];
-    }
-    compStyle = getComputedStyle(elm);
-    var props = compStyle['transition-property'].split(', ');
-    for (; i < props.length; ++i) {
-        if (applied.indexOf(props[i]) !== -1)
-            amount++;
-    }
-    elm.addEventListener('transitionend', function (ev) {
-        if (ev.target === elm)
-            --amount;
-        if (amount === 0)
-            rm();
-    });
-}
-function forceReflow() {
-    reflowForced = false;
-}
-exports.styleModule = {
-    pre: forceReflow,
-    create: updateStyle,
-    update: updateStyle,
-    destroy: applyDestroyStyle,
-    remove: applyRemoveStyle
-};
-exports.default = exports.styleModule;
-
-},{}],"node_modules/snabbdom/modules/eventlisteners.js":[function(require,module,exports) {
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-function invokeHandler(handler, vnode, event) {
-    if (typeof handler === "function") {
-        // call function handler
-        handler.call(vnode, event, vnode);
-    }
-    else if (typeof handler === "object") {
-        // call handler with arguments
-        if (typeof handler[0] === "function") {
-            // special case for single argument for performance
-            if (handler.length === 2) {
-                handler[0].call(vnode, handler[1], event, vnode);
-            }
-            else {
-                var args = handler.slice(1);
-                args.push(event);
-                args.push(vnode);
-                handler[0].apply(vnode, args);
-            }
-        }
-        else {
-            // call multiple handlers
-            for (var i = 0; i < handler.length; i++) {
-                invokeHandler(handler[i], vnode, event);
-            }
-        }
-    }
-}
-function handleEvent(event, vnode) {
-    var name = event.type, on = vnode.data.on;
-    // call event handler(s) if exists
-    if (on && on[name]) {
-        invokeHandler(on[name], vnode, event);
-    }
-}
-function createListener() {
-    return function handler(event) {
-        handleEvent(event, handler.vnode);
-    };
-}
-function updateEventListeners(oldVnode, vnode) {
-    var oldOn = oldVnode.data.on, oldListener = oldVnode.listener, oldElm = oldVnode.elm, on = vnode && vnode.data.on, elm = (vnode && vnode.elm), name;
-    // optimization for reused immutable handlers
-    if (oldOn === on) {
-        return;
-    }
-    // remove existing listeners which no longer used
-    if (oldOn && oldListener) {
-        // if element changed or deleted we remove all existing listeners unconditionally
-        if (!on) {
-            for (name in oldOn) {
-                // remove listener if element was changed or existing listeners removed
-                oldElm.removeEventListener(name, oldListener, false);
-            }
-        }
-        else {
-            for (name in oldOn) {
-                // remove listener if existing listener removed
-                if (!on[name]) {
-                    oldElm.removeEventListener(name, oldListener, false);
-                }
-            }
-        }
-    }
-    // add new listeners which has not already attached
-    if (on) {
-        // reuse existing listener or create new
-        var listener = vnode.listener = oldVnode.listener || createListener();
-        // update vnode for listener
-        listener.vnode = vnode;
-        // if element changed or added we add all needed listeners unconditionally
-        if (!oldOn) {
-            for (name in on) {
-                // add listener if element was changed or new listeners added
-                elm.addEventListener(name, listener, false);
-            }
-        }
-        else {
-            for (name in on) {
-                // add listener if new listener added
-                if (!oldOn[name]) {
-                    elm.addEventListener(name, listener, false);
-                }
-            }
-        }
-    }
-}
-exports.eventListenersModule = {
-    create: updateEventListeners,
-    update: updateEventListeners,
-    destroy: updateEventListeners
-};
-exports.default = exports.eventListenersModule;
-
-},{}],"src/03-module.js":[function(require,module,exports) {
+},{"./vnode":"node_modules/snabbdom/es/vnode.js","./is":"node_modules/snabbdom/es/is.js","./htmldomapi":"node_modules/snabbdom/es/htmldomapi.js","./h":"node_modules/snabbdom/es/h.js","./thunk":"node_modules/snabbdom/es/thunk.js"}],"src/06-debug-updatechildren-with-key.js":[function(require,module,exports) {
 "use strict";
 
 var _snabbdom = require("snabbdom");
 
-var _style = _interopRequireDefault(require("snabbdom/modules/style"));
+var patch = (0, _snabbdom.init)([]); // 首次渲染
 
-var _eventlisteners = _interopRequireDefault(require("snabbdom/modules/eventlisteners"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var patch = (0, _snabbdom.init)([_style.default, _eventlisteners.default]);
-var vnode = (0, _snabbdom.h)('div', {
-  style: {
-    backgroundColor: 'red'
-  },
-  on: {
-    click: onClick
-  }
-}, [(0, _snabbdom.h)('h1', 'Hello World'), (0, _snabbdom.h)('p', 'lorem ...')]);
-
-function onClick() {
-  console.log('clicked!');
-}
-
+var vnode = (0, _snabbdom.h)('ul', [(0, _snabbdom.h)('li', {
+  key: 'a'
+}, '首页'), (0, _snabbdom.h)('li', {
+  key: 'b'
+}, '视频'), (0, _snabbdom.h)('li', {
+  key: 'c'
+}, '微博')]);
 var app = document.querySelector('#app');
-patch(app, vnode);
-},{"snabbdom":"node_modules/snabbdom/es/snabbdom.js","snabbdom/modules/style":"node_modules/snabbdom/modules/style.js","snabbdom/modules/eventlisteners":"node_modules/snabbdom/modules/eventlisteners.js"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+var oldVnode = patch(app, vnode); // patchVnode 的执行过程
+
+vnode = vnode = (0, _snabbdom.h)('ul', [(0, _snabbdom.h)('li', {
+  key: 'a'
+}, '首页'), (0, _snabbdom.h)('li', {
+  key: 'c'
+}, '微博'), (0, _snabbdom.h)('li', {
+  key: 'b'
+}, '视频')]);
+patch(oldVnode, vnode);
+},{"snabbdom":"node_modules/snabbdom/es/snabbdom.js"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -1014,7 +819,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54538" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "56991" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
@@ -1190,5 +995,5 @@ function hmrAcceptRun(bundle, id) {
     return true;
   }
 }
-},{}]},{},["node_modules/parcel-bundler/src/builtins/hmr-runtime.js","src/03-module.js"], null)
-//# sourceMappingURL=/03-module.bd1a38c3.js.map
+},{}]},{},["node_modules/parcel-bundler/src/builtins/hmr-runtime.js","src/06-debug-updatechildren-with-key.js"], null)
+//# sourceMappingURL=/06-debug-updatechildren-with-key.b5091f7f.js.map

@@ -14,9 +14,12 @@ export type PostHook = () => any;
 export interface Hooks {
   pre?: PreHook;
   init?: InitHook;
+  // 创建完真实 DOM 后触发
   create?: CreateHook;
   insert?: InsertHook;
   prepatch?: PrePatchHook;
+  // patchVnode 开头调用
+  // 对比Vnode中触发，比prepatch晚
   update?: UpdateHook;
   postpatch?: PostPatchHook;
   destroy?: DestroyHook;
